@@ -30,7 +30,7 @@ class InstallCommand extends Command
     public function handle()
     {
         // config file
-        $this->call('vendor:publish', ['provider' => 'AlhajiAki\MqttClient\MqttClientServiceProvider']);
+        $this->call('vendor:publish', ['--provider' => 'AlhajiAki\MqttClient\MqttClientServiceProvider']);
 
         // Commands...
         (new Filesystem)->ensureDirectoryExists(app_path('Console/Commands'));
