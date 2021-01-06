@@ -1,10 +1,9 @@
 <?php
 
-namespace AlhajiAki\MqttClient\Console;
+namespace App\Console\Commands;
 
 use AlhajiAki\MqttClient\Facades\MqttClient;
 use Illuminate\Console\Command;
-use Morbo\React\Mqtt\Packets;
 
 class ListenCommand extends Command
 {
@@ -29,16 +28,14 @@ class ListenCommand extends Command
      */
     public function handle()
     {
-        // TODO: get topics from a source
-        MqttClient::connect()->subscribe('foo/bar', function ($stream) {
-            $stream->on(Packets\Publish::EVENT, function (Packets\Publish $message) {
-                printf(
-                    'Received payload "%s" for topic "%s"%s',
-                    $message->getPayload(),
-                    $message->getTopic(),
-                    PHP_EOL
-                );
-            });
-        }, 0)->run();
+        MqttClient::connect()->subscribe('foo/bar', function ($message) {
+            // TODO: replace this block below with your own logic
+            printf(
+                'Received payload "%s" for topic "%s"%s',
+                $message->getPayload(),
+                $message->getTopic(),
+                PHP_EOL
+            );
+        }, 0);
     }
 }

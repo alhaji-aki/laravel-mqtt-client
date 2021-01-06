@@ -12,4 +12,4 @@ $data = [
 
 $qos = Morbo\React\Mqtt\Packets\QoS\Levels::AT_MOST_ONCE_DELIVERY;  // 0
 
-MqttClient::connect()->publish('foo/bar', json_encode($data), $qos)->run();
+MqttClient::connect()->publish('foo/bar', json_encode($data), $qos);

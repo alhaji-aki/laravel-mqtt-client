@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Support\Facades\Log;
 use Morbo\React\Mqtt\Client;
 use Morbo\React\Mqtt\ConnectionOptions;
+use Morbo\React\Mqtt\Packets\Publish;
+use Morbo\React\Mqtt\Packets\UnsubscribeAck;
 use React\EventLoop\Factory;
 use React\Socket\ConnectionInterface;
 
@@ -80,29 +82,24 @@ class MqttClient
      * @param integer $qos
      * @param boolean $dup
      * @param boolean $retain
-     * @return \AlhajiAki\MqttClient\MqttClient
+     * @return void
      */
     public function publish(string $topic, string $data, int $qos = 0, bool $dup = false, bool $retain = false)
     {
         $args = func_get_args();
 
         $this->connection->then(function (ConnectionInterface $stream) use ($args) {
-            /**
-             * Stop loop, when client disconnected from mqtt server
-             */
-            $stream->on('end', function () {
-                $this->loop->stop();
-            });
+            $this->listenForEnd($stream);
 
             $this->client->publish($stream, ...$args)->then(function (ConnectionInterface $publishStream) {
                 /**
                  * Disconnect when published
                  */
-                $this->client->disconnect($publishStream);
+                $this->disconnect();
             });
         });
 
-        return $this;
+        $this->run();
     }
 
     /**
@@ -112,16 +109,18 @@ class MqttClient
      * @param Closure $successListener
      * @param integer $qos
      * @param Closure $errorListener
-     * @return \AlhajiAki\MqttClient\MqttClient
+     * @return void
      */
     public function subscribe(string $topic, Closure $successListener, int $qos = 0, Closure $errorListener = null)
     {
         $this->connection->then(function (ConnectionInterface $stream) use ($topic, $successListener, $qos, $errorListener) {
             $this->client->subscribe($stream, $topic, $qos)
-                ->then($successListener, $errorListener);
+                ->then(function (ConnectionInterface $stream) use ($successListener) {
+                    $stream->on(Publish::EVENT, $successListener);
+                }, $errorListener);
         });
 
-        return $this;
+        $this->run();
     }
 
     /**
@@ -130,27 +129,47 @@ class MqttClient
      * @param string $topic
      * @param Closure $successListener
      * @param Closure $errorListener
-     * @return \AlhajiAki\MqttClient\MqttClient
+     * @return void
      */
     public function unsubscribe(string $topic, Closure $successListener = null, Closure $errorListener = null)
     {
-        $this->connection->then(function (ConnectionInterface $stream) use ($topic, $successListener, $errorListener) {
-            $this->client->unsubscribe($stream, $topic)
-                ->then($successListener, $errorListener);
-        });
+        $this->connection->then(function (ConnectionInterface $stream) use ($topic, $successListener) {
+            $this->listenForEnd($stream);
 
-        return $this;
+            $this->client->unsubscribe($stream, $topic)
+                ->then(function (ConnectionInterface $stream) use ($successListener) {
+                    $stream->on(UnsubscribeAck::EVENT, $successListener);
+
+                    /**
+                     * Disconnect when unsubscribed
+                     */
+                    $this->disconnect();
+                });
+        })->then(null, $errorListener);
+
+        $this->run();
     }
 
     /**
      * Disconnect from the broker
      *
-     * @param ConnectionInterface $stream
      * @return void
      */
-    public function disconnect(ConnectionInterface $stream)
+    public function disconnect()
     {
-        $this->client->disconnect($stream);
+        $this->connection->then(function (ConnectionInterface $stream) {
+            $this->client->disconnect($stream);
+        });
+    }
+
+    /**
+     * Returns an instance of the connection
+     *
+     * @return \React\Promise\PromiseInterface
+     */
+    public function connection()
+    {
+        return $this->connection;
     }
 
     /**
@@ -158,9 +177,19 @@ class MqttClient
      *
      * @return void
      */
-    public function run()
+    protected function run()
     {
         $this->loop->run();
+    }
+
+    /**
+     * Stop loop, when client disconnected from mqtt server
+     */
+    protected function listenForEnd(ConnectionInterface $stream)
+    {
+        $stream->on('end', function () {
+            $this->loop->stop();
+        });
     }
 
     /**

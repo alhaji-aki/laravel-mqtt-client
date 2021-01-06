@@ -6,10 +6,10 @@
     "keywords": [
         "laravel",
         "mqtt",
-        "mqtt publish",
-        "mqtt subscribe",
-        "mqtt client",
-        "mqtt protocol"
+        "iot",
+        "publish",
+        "subscribe",
+        "client"
     ],
     "authors": [
         {
@@ -44,9 +44,9 @@
         "php": "^7.3|^8.0",
         "alexmorbo/react-mqtt": "dev-master",
         "illuminate/console": "^7.0|^8.0",
+        "illuminate/filesystem": "^7.0|^8.0",
         "illuminate/log": "^7.0|^8.0",
-        "illuminate/support": "^7.0|^8.0",
-        "react/socket": "^1.6"
+        "illuminate/support": "^7.0|^8.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.3",

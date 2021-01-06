@@ -16,7 +16,7 @@ class MqttClientServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/laravel-mqtt-client.php', 'laravel-mqtt-client');
 
         $this->commands([
-            Console\ListenCommand::class,
+            Console\InstallCommand::class,
         ]);
     }
 
