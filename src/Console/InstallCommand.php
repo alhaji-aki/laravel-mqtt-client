@@ -36,12 +36,6 @@ class InstallCommand extends Command
         (new Filesystem)->ensureDirectoryExists(app_path('Console/Commands'));
         (new Filesystem)->copyDirectory(__DIR__ . '/../../stubs/App/Console/Commands', app_path('Console/Commands'));
 
-        Artisan::starting(function ($artisan) {
-            $artisan->resolveCommands([
-                \App\Console\Commands\ListenCommand::class,
-            ]);
-        });
-
         $this->info('Mqtt Client scaffolding completed successfully.');
     }
 }

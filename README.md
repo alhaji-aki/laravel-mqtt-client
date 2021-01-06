@@ -4,11 +4,13 @@
 composer require alhaji-aki/laravel-mqtt-client
 ```
 
-publish config and adds listen command to app, change the logic in the listen command
+publish config and adds listen command to app
 
 ```bash
 php artisan mqtt:install
 ```
+
+change the logic in the listen command and register it in the Command Kernel
 
 # available methods:
 
