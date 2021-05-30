@@ -34,7 +34,7 @@ class MqttClient
     protected $connection;
 
     /**
-     * @var \React\EventLoop\Factory
+     * @var \React\EventLoop\LoopInterface
      */
     protected $loop;
 
